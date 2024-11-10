@@ -3,13 +3,12 @@ package client.chatclient;
 import java.io.*;
 
 public class IO {
-    public final DataInputStream dis;
-    public final DataOutputStream dos;
+    public final BufferedReader br;
+    public final BufferedOutputStream bos;
 
-    public IO(DataInputStream dis, DataOutputStream dos) {
+    public IO(BufferedReader br, BufferedOutputStream bos) {
 
-        this.dis = dis;
-        this.dos = dos;
+        this.br = br;
+        this.bos = bos;
     }
-
 }

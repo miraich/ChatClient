@@ -8,12 +8,10 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.net.Socket;
 
-public class HelloApplication extends Application {
-
-
+public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("chat-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("chat-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 400, 400);
 
         ChatController chatController = fxmlLoader.getController();
@@ -22,11 +20,22 @@ public class HelloApplication extends Application {
             user = new User();
         }
 
+//        try {
+//            Socket clientSocket = new Socket("localhost", 4444);
+//            IO io = new IO(
+//                    new BufferedReader(new InputStreamReader(clientSocket.getInputStream())),
+//                    new PrintWriter(clientSocket.getOutputStream())
+//            );
+//            chatController.setChatService(new ChatService(user, io));
+//        } catch (Exception e) {
+//            System.out.println(e.getMessage());
+//        }
+
         try {
-            MySocket mySocket = new MySocket(new Socket("localhost", 4444));
+            Socket clientSocket = new Socket("localhost", 4444);
             IO io = new IO(
-                    new DataInputStream(mySocket.clientSocket.getInputStream()),
-                    new DataOutputStream(mySocket.clientSocket.getOutputStream())
+                    new BufferedReader(new InputStreamReader(clientSocket.getInputStream())),
+                    new BufferedOutputStream(clientSocket.getOutputStream())
             );
             chatController.setChatService(new ChatService(user, io));
         } catch (Exception e) {

@@ -1,6 +1,5 @@
 package client.chatclient;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -22,10 +21,6 @@ public class ChatController {
 
     private ChatService chatService;
 
-
-    public ChatController() {
-    }
-
     @FXML
     private void onEnterPressed(KeyEvent event) {
         if (chatService.getUser().getUsername() == null) {
@@ -39,7 +34,6 @@ public class ChatController {
         String msg = inputArea.getText().trim();
         if (event.getCode() == KeyCode.ENTER && !msg.isEmpty()) {
             chatService.sendMessage(msg + "\n");
-//            messagesArea.appendText(msg + "\n");
             inputArea.clear();
         }
     }
@@ -48,15 +42,6 @@ public class ChatController {
     private void onNameChanged() {
         chatService.getUser().setUsername(inputNameField.getText());
     }
-
-//    @FXML
-//    private void onConnect() {
-//        if (chatService.getUser().getUsername() == null) {
-//            System.out.println("name is empty");
-//            return;
-//        }
-//
-//    }
 
     public void setChatService(ChatService chatService) {
         this.chatService = chatService;

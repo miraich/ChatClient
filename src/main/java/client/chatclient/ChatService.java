@@ -1,10 +1,6 @@
 package client.chatclient;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Socket;
 
 public class ChatService {
     private final User user;
@@ -17,11 +13,12 @@ public class ChatService {
 
     public void sendMessage(String message) {
         try {
-            io.dos.writeUTF(message);
-            System.out.println(message + " sent");
+            io.bos.write(message.getBytes());
+            io.bos.flush();
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+        System.out.println(message + " sent");
     }
 
     public void receiveMessage(String message) {
