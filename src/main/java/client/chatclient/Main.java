@@ -20,28 +20,27 @@ public class Main extends Application {
             user = new User();
         }
 
-//        try {
-//            Socket clientSocket = new Socket("localhost", 4444);
-//            IO io = new IO(
-//                    new BufferedReader(new InputStreamReader(clientSocket.getInputStream())),
-//                    new PrintWriter(clientSocket.getOutputStream())
-//            );
-//            chatController.setChatService(new ChatService(user, io));
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
-
         try {
-            Socket clientSocket = new Socket("localhost", 4444);
-            IO io = new IO(
-                    new BufferedReader(new InputStreamReader(clientSocket.getInputStream())),
+            Socket clientSocket = new Socket("26.73.93.155", 4444);
+            MyIO io = new MyIO(
+                    new BufferedInputStream(clientSocket.getInputStream()),
                     new BufferedOutputStream(clientSocket.getOutputStream())
             );
             chatController.setChatService(new ChatService(user, io));
-        } catch (Exception e) {
+
+            stage.setOnCloseRequest(_ -> {
+                try {
+                    chatController.getChatService().stop();
+                    io.bos.close();
+                    io.bis.close();
+                    clientSocket.close();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            });
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-
         stage.setTitle("Чат Молодечно");
         stage.setScene(scene);
         stage.show();
@@ -50,7 +49,6 @@ public class Main extends Application {
 //        dialog.setHeaderText("Hello World");
 //        dialog.showAndWait();
     }
-
     public static void main(String[] args) {
         launch();
     }

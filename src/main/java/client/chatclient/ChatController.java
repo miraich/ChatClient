@@ -46,5 +46,10 @@ public class ChatController {
     public void setChatService(ChatService chatService) {
         this.chatService = chatService;
         inputNameField.setText(chatService.getUser().getUsername());
+        this.chatService.setMessagesArea(messagesArea);
+    }
+
+    public ChatService getChatService() {
+        return chatService;
     }
 }
