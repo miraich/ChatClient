@@ -3,12 +3,30 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.chatclient.ChatController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="375.0" prefWidth="525.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.chatclient.controller.ChatController">
     <children>
-        <TextArea fx:id="messagesArea" editable="false" layoutX="14.0" layoutY="46.0" prefHeight="267.0" prefWidth="372.0" />
-        <TextArea fx:id="inputArea" layoutX="8.0" layoutY="323.0" onKeyPressed="#onEnterPressed" prefHeight="63.0" prefWidth="385.0" promptText="Введите сообщение..." />
-        <TextField fx:id="inputNameField" layoutX="8.0" layoutY="14.0" prefHeight="25.0" prefWidth="104.0" promptText="Ваше имя..." />
-      <Button fx:id="changeNameButton" layoutX="119.0" layoutY="14.0" mnemonicParsing="false" onAction="#onNameChanged" prefHeight="25.0" prefWidth="66.0" text="Сменить" />
-<!--      <Button fx:id="connectButton" layoutX="289.0" layoutY="14.0" mnemonicParsing="false" onAction="#onConnect" prefHeight="25.0" prefWidth="104.0" text="Подключиться" />-->
+        <TextArea fx:id="messagesArea" editable="false" layoutX="14.0" layoutY="46.0" prefHeight="267.0" prefWidth="372.0" wrapText="true" />
+        <TextArea fx:id="inputArea" layoutX="14.0" layoutY="321.0" onKeyPressed="#onEnterPressed" prefHeight="38.0" prefWidth="372.0" promptText="Введите сообщение..." wrapText="true" />
+        <TextField fx:id="inputNameField" layoutX="14.0" layoutY="14.0" prefHeight="25.0" prefWidth="104.0" promptText="Ваше имя..." />
+      <Button fx:id="changeNameButton" layoutX="125.0" layoutY="14.0" mnemonicParsing="false" onAction="#onNameChanged" prefHeight="25.0" prefWidth="66.0" text="Сменить" />
+      <Button fx:id="connectButton" layoutX="282.0" layoutY="14.0" mnemonicParsing="false" onAction="#onConnectButtonPressed" prefHeight="25.0" prefWidth="104.0" text="Подключиться" />
+      <Label layoutX="250.0" layoutY="18.0" text="звук" />
+      <ScrollPane layoutX="399.0" layoutY="46.0" prefHeight="313.0" prefWidth="112.0">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="400.0" prefWidth="97.0">
+               <children>
+                  <GridPane fx:id="usersGrid">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                  </GridPane>
+               </children></AnchorPane>
+        </content>
+      </ScrollPane>
     </children>
 </Pane>
