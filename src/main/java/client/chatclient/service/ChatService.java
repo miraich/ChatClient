@@ -1,6 +1,9 @@
 package client.chatclient.service;
 
+import client.chatclient.AudioPlayer;
 import client.chatclient.MyIO;
+import client.chatclient.Static.DateTime;
+import client.chatclient.dto.MessageDTO;
 import client.chatclient.dto.UserDTO;
 import client.chatclient.model.User;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -13,95 +16,174 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 
+import javax.sound.sampled.*;
 import java.io.IOException;
+import java.net.*;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+
+import static client.chatclient.Static.Info.activeUsers;
+import static client.chatclient.Static.Info.usersAudio;
 
 public class ChatService {
+    private DatagramSocket socket;
+    private final AudioFormat format;
+    private final DataLine.Info info;
+    private final MyIO io;
+    private final ObjectMapper objectMapper;
+    private final byte[] audioBufferWriting = new byte[4096];
+    private final byte[] audioBufferListening = new byte[4096];
+    private final byte[] messageBuffer = new byte[1024];
     @FXML
     private GridPane usersGrid;
-    private final ObjectMapper objectMapper;
-    private final User user;
-    private final MyIO io;
-    private volatile boolean runningMsgs = true;
-    private volatile boolean runningUsernames = true;
     @FXML
     private TextArea messagesArea;
 
-    public ChatService(User user, MyIO io) {
-        this.user = user;
+    public ChatService(MyIO io) {
         this.io = io;
         JsonFactory jsonFactory = new JsonFactory();
         jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         jsonFactory.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         objectMapper = new ObjectMapper(jsonFactory);
+        this.format = new AudioFormat(44100, 16, 1, true, true);
+        this.info = new DataLine.Info(TargetDataLine.class, format);
+        try {
+            socket = new DatagramSocket(50036);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
         beginReceiveUsers();
-//        beginReceiveMessages();
+        beginReceiveMessages();
+        beginSendingAudio();
+        beginRecievingAudio();
     }
 
     public void sendMessage(String message) {
-//        MessageOuterClass.User user1 = MessageOuterClass.User.newBuilder()
-//                .setName(user.getUsername())
-//                .build();
-//
-//        MessageOuterClass.Message um = MessageOuterClass.Message.newBuilder()
-//                .setUser(user1)
-//                .setMessage(message)
-//                .setDateTime(LocalDate.now().toString())
-//                .build();
-//        try {
-//            um.writeDelimitedTo(io.bos);
-//            io.bos.flush();
-//        } catch (IOException e) {
-//            MyAlert.showAlert("Ошибка ввода/вывода", "Ошибка при отправки сообщения");
-//        }
+        new Thread(() -> {
+            try {
+                MessageDTO messageDTO = new MessageDTO();
+                messageDTO.setMessage(message);
+                UserDTO userDTO = new UserDTO();
+                userDTO.setUsername(User.getInstance().getUsername());
+                messageDTO.setUser(userDTO);
+                DateTime.currentTime = ZonedDateTime.now();
+                messageDTO.setDateTime(DateTime.currentTime.format(DateTime.formatter));
+                byte[] json_b = objectMapper.writeValueAsBytes(messageDTO);
+                io.bos.write(json_b);
+                io.bos.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+//                MyAlert.showAlert("Ошибка ввода/вывода", "Ошибка при отправки сообщения");
+            }
+        }).start();
     }
 
     private void beginReceiveMessages() {
-//        new Thread(() -> {
-//            MessageOuterClass.Message um;
-//            try {
-//                while (runningMsgs && ((um = MessageOuterClass.Message.parseDelimitedFrom(io.bis)) != null)) {
-//                    messagesArea.appendText(um.getUser().getName() + " " + um.getMessage());
-//                }
-//            } catch (IOException e) {
-//                runningMsgs = false;
-//            }
-//        }).start();
+        new Thread(() -> {
+            try {
+                MessageDTO messageDTO;
+                synchronized (io.bis) {
+                    while (io.bis.read(messageBuffer, 0, messageBuffer.length) != -1) {
+                        messageDTO = objectMapper.readValue(messageBuffer, MessageDTO.class);
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder
+                                .append(messageDTO.getDateTime())
+                                .append(" ")
+                                .append(messageDTO.getUser().getUsername())
+                                .append(" ")
+                                .append(messageDTO.getMessage());
+                        messagesArea.appendText(stringBuilder.toString());
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void beginReceiveUsers() {
         new Thread(() -> {
             try {
-                byte[] buffer = new byte[1024];
                 UserDTO[] users;
-                while (runningUsernames && io.bis.read(buffer) != -1) {
-                    Platform.runLater(() -> usersGrid.getChildren().clear());
-                    users = objectMapper.readValue(buffer, UserDTO[].class);
-                    for (int i = 0; i < users.length; i++) {
-                        int finalI = i;
-                        UserDTO[] finalUsers = users;
-                        Platform.runLater(() -> {
-                            usersGrid.add(new Label(finalUsers[finalI].getUsername()), 0, finalI);
-                            System.out.println(finalUsers[finalI].getUsername());
-                        });
+                synchronized (io.bis) {
+                    while (io.bis.read(messageBuffer, 0, messageBuffer.length) != -1) {
+                        users = objectMapper.readValue(messageBuffer, UserDTO[].class);
+                        activeUsers.clear();
+                        Platform.runLater(() -> usersGrid.getChildren().clear());
+                        activeUsers.addAll(Arrays.asList(users));
+                        System.out.println(activeUsers.size());
+                        int i = 0;
+                        for (UserDTO user : activeUsers) {
+                            String name = user.getUsername();
+                            int finalI = i;
+                            Platform.runLater(() -> usersGrid.add(new Label(name), 0, finalI));
+                            i++;
+                        }
+//                    messagesArea.appendText(new StringBuilder("Пользователь ")
+//                            .append(name)
+//                            .append(" ")
+//                            .append("присоединился к серверу!\n")
+//                            .toString());
                     }
                 }
             } catch (IOException e) {
-                runningUsernames = false;
-                System.out.println(e.getMessage());
+//                Platform.runLater(() -> MyAlert.showAlert("Ошибка ввода/вывода", "Ошибка при получении имен пользователей"));
+                e.printStackTrace();
             }
         }).start();
     }
 
-    public void stopRunningMsgs() {
-        runningMsgs = false;
+    private void beginSendingAudio() {
+        new Thread(() -> {
+            try {
+                TargetDataLine targetLine = (TargetDataLine) AudioSystem.getLine(info);
+                targetLine.open(format);
+                targetLine.start();
+                System.out.println("Recording and sending audio...");
+                while (true) { //флаг для кнопки мута
+                    int bytesRead = targetLine.read(audioBufferWriting, 0, audioBufferWriting.length);
+                    DatagramPacket packet = new DatagramPacket(audioBufferWriting, bytesRead, InetAddress.getByName("localhost"), 50005);
+                    socket.send(packet);
+                }
+
+            } catch (IOException | LineUnavailableException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
-    public void stopRunningUsernames() {
-        runningUsernames = false;
-    }
+    private void beginRecievingAudio() {
+        new Thread(() -> {
+            try {
+                while (true) {
+                    DatagramPacket audioPacket = new DatagramPacket(audioBufferListening, audioBufferListening.length);
+                    socket.receive(audioPacket);
 
-    public User getUser() {
-        return user;
+                    // Логируем адрес отправителя
+                    System.out.println("Received audio from: " + audioPacket.getAddress() + ":" + audioPacket.getPort());
+
+                    if (audioPacket.getPort() == 50030) {
+                        continue; // Пропускаем свой собственный аудиопоток
+                        // не правильно мб
+                    }
+
+
+                    byte[] audioData = audioPacket.getData();
+                    int length = audioPacket.getLength();
+
+                    AudioPlayer audioPlayer = usersAudio.get(audioPacket.getAddress());
+                    if (audioPlayer == null) {
+                        audioPlayer = new AudioPlayer();
+                        usersAudio.put(audioPacket.getAddress(), audioPlayer);
+                    }
+                    AudioPlayer finalAudioPlayer = audioPlayer;
+                    new Thread(() -> finalAudioPlayer.playAudio(audioData, length)).start();
+                }
+
+            } catch (IOException | LineUnavailableException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     public void setMessagesArea(TextArea messagesArea) {

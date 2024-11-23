@@ -3,7 +3,7 @@ package client.chatclient.controller;
 import client.chatclient.Static.MyAlert;
 import client.chatclient.model.User;
 import client.chatclient.service.ChatService;
-import client.chatclient.service.ConnectService;
+import client.chatclient.service.Client;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -27,11 +27,11 @@ public class ChatController {
     private TextArea inputArea;
 
     private ChatService chatService;
-    private ConnectService connectService;
+    private Client client;
 
     @FXML
     private void onEnterPressed(KeyEvent event) {
-        if (event.getCode() == KeyCode.ENTER && !connectService.isConnected()) {
+        if (event.getCode() == KeyCode.ENTER && !client.isConnected()) {
             MyAlert.showAlert("Ошибка ввода/вывода", "Вы не подключены к серверу");
             return;
         }
@@ -45,7 +45,11 @@ public class ChatController {
             return;
         }
         String msg = inputArea.getText().trim();
-        if (event.getCode() == KeyCode.ENTER && !msg.isEmpty() && connectService.isConnected()) {
+        if (msg.length() > 500) {
+            MyAlert.showAlert("Ошибка ввода/вывода", "Сообщение превышает 500 символов");
+            return;
+        }
+        if (event.getCode() == KeyCode.ENTER && !msg.isEmpty() && client.isConnected()) {
             chatService.sendMessage(msg + "\n");
             inputArea.clear();
         }
@@ -53,13 +57,13 @@ public class ChatController {
 
     @FXML
     private void onNameChanged() {
-        chatService.getUser().setUsername(inputNameField.getText().trim());
+        User.getInstance().setUsername(inputNameField.getText());
     }
 
     @FXML
     private void onConnectButtonPressed() {
-        this.connectService.setConnectButton(connectButton);
-        this.connectService.setupConnection(this);
+        this.client.setConnectButton(connectButton);
+        this.client.connect(this);
     }
 
     public GridPane getUsersGrid() {
@@ -80,7 +84,7 @@ public class ChatController {
         this.chatService.setUsersGrid(usersGrid);
     }
 
-    public void setConnectService(ConnectService connectService) {
-        this.connectService = connectService;
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

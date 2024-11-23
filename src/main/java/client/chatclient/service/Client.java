@@ -5,6 +5,7 @@ import client.chatclient.Static.MyAlert;
 import client.chatclient.controller.ChatController;
 import client.chatclient.dto.UserDTO;
 import client.chatclient.model.User;
+import client.chatclient.proto.Dtos;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -18,37 +19,35 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ConnectService {
+public class Client {
 
-    private final ObjectMapper objectMapper;
     @FXML
     private Button connectButton;
     private Socket clientSocket;
     private MyIO io;
     private boolean connected;
+    private final ObjectMapper objectMapper;
 
-    public ConnectService() {
+    public Client() {
         JsonFactory jsonFactory = new JsonFactory();
         jsonFactory.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
         jsonFactory.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         objectMapper = new ObjectMapper(jsonFactory);
     }
 
-    public void setupConnection(ChatController controller) {
+    public void connect(ChatController controller) {
         if (!connected) {
             try {
-                clientSocket = new Socket("192.168.0.107", 4444);
+                clientSocket = new Socket("26.73.93.155", 4444);
                 io = new MyIO(
                         new BufferedInputStream(clientSocket.getInputStream()),
                         new BufferedOutputStream(clientSocket.getOutputStream())
                 );
                 sendUser(new UserDTO(User.getInstance().getUsername()));
-                controller.setChatService(new ChatService(User.getInstance(), io));
+                controller.setChatService(new ChatService(io));
                 Stage stage = (Stage) connectButton.getScene().getWindow();
                 stage.setOnCloseRequest(_ -> {
                     try {
-                        controller.getChatService().stopRunningMsgs();
-                        controller.getChatService().stopRunningUsernames();
                         io.bis.close();
                         io.bos.close();
                         clientSocket.close();
@@ -68,8 +67,6 @@ public class ConnectService {
 
     private void disconnect(ChatController controller) {
         try {
-            controller.getChatService().stopRunningUsernames();
-            controller.getChatService().stopRunningMsgs();
             io.bis.close();
             io.bos.close();
             clientSocket.close();
@@ -82,13 +79,15 @@ public class ConnectService {
     }
 
     private void sendUser(UserDTO user) {
-        try {
-            byte[] json_b = objectMapper.writeValueAsBytes(user);
-            io.bos.write(json_b);
-            io.bos.flush();
-        } catch (IOException e) {
-            MyAlert.showAlert("Ошибка ввода/вывода", "Ошибка при отправки объекта пользователя");
-        }
+        new Thread(() -> {
+            try {
+                byte[] json_b = objectMapper.writeValueAsBytes(user);
+                io.bos.write(json_b);
+                io.bos.flush();
+            } catch (IOException e) {
+                MyAlert.showAlert("Ошибка ввода/вывода", "Ошибка при отправки объекта пользователя");
+            }
+        }).start();
     }
 
     public void setConnectButton(Button connectButton) {
@@ -98,4 +97,6 @@ public class ConnectService {
     public boolean isConnected() {
         return connected;
     }
+
+
 }

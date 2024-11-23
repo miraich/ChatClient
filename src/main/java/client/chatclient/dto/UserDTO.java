@@ -1,6 +1,7 @@
 package client.chatclient.dto;
 
 public class UserDTO {
+    private int id;
     private String username;
 
     public UserDTO() {}
@@ -15,5 +16,13 @@ public class UserDTO {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

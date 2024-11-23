@@ -33,13 +33,13 @@ public class User implements Serializable {
             MyAlert.showAlert("Ошибка ввода/вывода", "Имя пользователя null");
             return;
         }
-
+        username = username.trim();
         if (username.isEmpty()) {
             MyAlert.showAlert("Ошибка ввода/вывода", "Имя пользователя не содержит символов");
             return;
         }
 
-        if (username.length() > 15) {
+        if (username.length() >= 15) {
             MyAlert.showAlert("Ошибка ввода/вывода", "Имя пользователя не должно быть длинее 15 символов");
             return;
         }
@@ -59,7 +59,9 @@ public class User implements Serializable {
         User loadedUser = null;
         try (var ois = new ObjectInputStream(new FileInputStream("user.save"))) {
             loadedUser = (User) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
+
+        } catch (ClassNotFoundException e) {
             MyAlert.showAlert("Ошибка десериализации пользователя", e.getMessage());
         }
         return loadedUser;
