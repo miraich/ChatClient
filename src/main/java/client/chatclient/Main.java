@@ -2,11 +2,12 @@ package client.chatclient;
 
 import client.chatclient.controller.ChatController;
 import client.chatclient.model.User;
-import client.chatclient.service.Client;
+import client.chatclient.service.ConnectionService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
 import java.io.*;
 
 public class Main extends Application {
@@ -15,13 +16,15 @@ public class Main extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("chat-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 525, 375);
         ChatController controller = fxmlLoader.getController();
-        controller.setClient(new Client());
+        controller.setClient(new ConnectionService());
         controller.getInputNameField().setText(User.getInstance().getUsername());
         stage.setResizable(false);
         stage.setTitle("Чат Молодечно");
         stage.setScene(scene);
         stage.show();
+        
     }
+
 
     public static void main(String[] args) {
         launch();

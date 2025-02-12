@@ -3,7 +3,7 @@ package client.chatclient.controller;
 import client.chatclient.Static.MyAlert;
 import client.chatclient.model.User;
 import client.chatclient.service.ChatService;
-import client.chatclient.service.Client;
+import client.chatclient.service.ConnectionService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -27,7 +27,7 @@ public class ChatController {
     private TextArea inputArea;
 
     private ChatService chatService;
-    private Client client;
+    private ConnectionService client;
 
     @FXML
     private void onEnterPressed(KeyEvent event) {
@@ -84,7 +84,7 @@ public class ChatController {
         this.chatService.setUsersGrid(usersGrid);
     }
 
-    public void setClient(Client client) {
+    public void setClient(ConnectionService client) {
         this.client = client;
     }
 }
