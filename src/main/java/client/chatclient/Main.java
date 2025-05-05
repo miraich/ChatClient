@@ -19,13 +19,10 @@ public class Main extends Application {
         controller.setClient(new ConnectionService());
         controller.getInputNameField().setText(User.getInstance().getUsername());
         stage.setResizable(false);
-        stage.setTitle("Чат Молодечно");
+        stage.setTitle("Чат");
         stage.setScene(scene);
         stage.show();
-        
     }
-
-
     public static void main(String[] args) {
         launch();
     }

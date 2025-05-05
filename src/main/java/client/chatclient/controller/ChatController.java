@@ -17,8 +17,8 @@ public class ChatController {
     public GridPane usersGrid;
     @FXML
     private Button connectButton;
-    @FXML
-    private Button changeNameButton;
+//    @FXML
+//    private Button changeNameButton;
     @FXML
     private TextField inputNameField;
     @FXML
@@ -66,13 +66,13 @@ public class ChatController {
         this.client.connect(this);
     }
 
-    public GridPane getUsersGrid() {
-        return usersGrid;
-    }
-
-    public ChatService getChatService() {
-        return chatService;
-    }
+//    public GridPane getUsersGrid() {
+//        return usersGrid;
+//    }
+//
+//    public ChatService getChatService() {
+//        return chatService;
+//    }
 
     public TextField getInputNameField() {
         return inputNameField;
@@ -81,7 +81,7 @@ public class ChatController {
     public void setChatService(ChatService chatService) {
         this.chatService = chatService;
         this.chatService.setMessagesArea(messagesArea);
-        this.chatService.setUsersGrid(usersGrid);
+//        this.chatService.setUsersGrid(usersGrid);
     }
 
     public void setClient(ConnectionService client) {

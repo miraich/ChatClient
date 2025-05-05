@@ -59,9 +59,7 @@ public class User implements Serializable {
         User loadedUser = null;
         try (var ois = new ObjectInputStream(new FileInputStream("user.save"))) {
             loadedUser = (User) ois.readObject();
-        } catch (IOException e) {
-
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             MyAlert.showAlert("Ошибка десериализации пользователя", e.getMessage());
         }
         return loadedUser;
