@@ -58,7 +58,7 @@ public class ChatService {
     private void beginReceiveMessages() {
         new Thread(() -> {
             try {
-                MessageDTO messageDTO;
+                MessageDTO messageDTO; // подумать StringBuilder
                 while (messageInfoIO.bis.read(messageBuffer, 0, messageBuffer.length) != -1) {
                     messageDTO = objectMapper.readValue(messageBuffer, MessageDTO.class);
                     String stringBuilder = messageDTO.getDateTime() +
